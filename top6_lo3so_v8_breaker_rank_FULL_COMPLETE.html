@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TOP 6 LÔ 3 SỐ - V8 BREAKER RANK FULL COMPLETE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:14px;font-family:Arial,sans-serif;background:#eef2f7;color:#172033}
+.wrap{max-width:2100px;margin:auto}
+h1{text-align:center;color:#0f766e;margin-bottom:6px}
+.sub{text-align:center;color:#64748b;line-height:1.6;margin-bottom:16px}
+.box{background:#fff;padding:16px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+textarea{width:100%;min-height:430px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-family:monospace;font-size:13px}
+button{border:0;border-radius:8px;padding:12px 16px;margin:5px;color:#fff;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.check{background:#475569}.an{background:#2563eb}.bt{background:#0f766e}
+.rules{background:#f0fdfa;border-left:5px solid #0f766e;padding:13px;border-radius:8px;line-height:1.75}
+.safe{background:#f0fdf4;border-left:5px solid #16a34a;padding:12px;border-radius:8px;line-height:1.65}
+.warn{background:#fef2f2;border-left:5px solid #dc2626;padding:12px;border-radius:8px;line-height:1.65}
+.note{background:#eff6ff;border-left:5px solid #2563eb;padding:12px;border-radius:8px;line-height:1.65}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-top:12px}
+.stat{background:#f8fafc;border:1px solid #e2e8f0;padding:11px;border-radius:8px;text-align:center}
+.stat strong{display:block;font-size:20px;margin-top:4px}
+.good{color:#15803d}.bad{color:#dc2626}.teal{color:#0f766e}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #e2e8f0;padding:7px;text-align:center}
+th{background:#1e293b;color:#fff;position:sticky;top:0}
+.scroll{overflow:auto;max-height:1200px}
+.best{background:#fef3c7;font-weight:bold}.base{background:#e0f2fe}
+.zero{background:#fee2e2}.hit{background:#dcfce7}
+.small{font-size:13px;color:#64748b;line-height:1.55}.progress{font-weight:bold;color:#2563eb;margin-top:8px}
+.err{color:#dc2626}.tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#e2e8f0;margin:2px}
+@media(max-width:800px){table{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🏆 TOP 6 LÔ 3 SỐ — V8 BREAKER RANK FULL COMPLETE</h1>
+<div class="sub">Bản sử dụng chính • Phân tích ngày mai + Backtest đủ toàn bộ từng ngày • S4 5/8/10 + 1 Breaker RANK từ streak ≥7</div>
+
+<div class="box">
+<h2>📥 DỮ LIỆU</h2>
+<div class="small">Dán khoảng 300 ngày. Lô 3 số dùng 23 giải từ Đặc biệt đến Giải Sáu.</div>
+<textarea id="input"></textarea><br>
+<button class="check" onclick="checkData()">🔍 KIỂM TRA DỮ LIỆU</button>
+<button class="an" onclick="analyzeNext()">🧠 PHÂN TÍCH TOP 6 NGÀY MAI</button>
+<button id="bt" class="bt" onclick="runBacktest()">📊 CHẠY BACKTEST V8 RANK</button>
+<div id="progress" class="progress"></div>
+</div>
+
+<div class="box">
+<h2>🔒 NGUYÊN TẮC V8</h2>
+<div class="safe">
+S4 5/8/10 vẫn là lõi. Khi streak &lt; 7: giữ nguyên S4. Khi streak ≥7: giữ <b>5 số tốt nhất của S4</b> và chỉ thử <b>1 Breaker</b>.
+</div>
+<div class="rules">
+<b>V8 BREAKER RANK — CẤU HÌNH KHÓA</b>
+<br>• Dữ liệu dùng tối đa <b>180 ngày trước ngày kiểm tra</b>.
+<br>• Lô 3 số lấy <b>3 số cuối của 23 giải</b>: ĐB, G1, G2, G3, G4, G5, G6. Bỏ G7 vì chỉ có 2 số.
+<br>• Không dùng dữ liệu tương lai.
+<br>• Nếu một số xuất hiện nhiều lần trong 23 giải thì tính đủ số nháy.
+<br>• streak <b>0–6</b>: dùng nguyên Top 6 S4.
+<br>• streak <b>≥7</b>: giữ 5 số mạnh nhất của S4 và thay đúng <b>1 Breaker RANK</b>.
+<br>• Breaker tìm trong vùng raw rank <b>#7–20</b>.
+<br>• Khi streak <b>≥10</b>: mở pool tới raw rank <b>#30</b>.
+<br>• Tổng dàn luôn đúng <b>6 số</b>.
+<br><br>
+Mốc hiện tại trên bộ 300 ngày: <b>120 lần test • 20 ngày ≥1 nháy • 16.67% • 0 max = 10 • tổng 23 nháy</b>.
+</div>
+</div>
+
+<div id="result"></div>
+</div>
+
+<script>
+const WIN=180, START=180, TOPN=6, BREAK_AT=7;
+const SOURCES=[{name:"V8 BREAKER RANK",key:"rank",baseline:true}];
+
+function fmt3(n){return String(n).padStart(3,"0")}
+function pct(a,b){return b?(a/b*100).toFixed(2):"0.00"}
+function normalizeText(s){return String(s||"").replace(/&nbsp;|&#160;/gi," ").replace(/\u00a0/g," ").replace(/\r/g,"").trim()}
+function digitsOnly(s){return String(s||"").replace(/\D/g,"")}
+function fmtDate(d){return String(d.getDate()).padStart(2,"0")+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+d.getFullYear()}
+
+function parseDateHeader(s){
+ const m=s.match(/ngày\s*(\d{1,2})\s*[-\/.]\s*(\d{1,2})\s*[-\/.]\s*(\d{4})/i);
+ if(!m)return null;
+ const day=+m[1],month=+m[2],year=+m[3],d=new Date(year,month-1,day);
+ if(d.getDate()!==day||d.getMonth()!==month-1||d.getFullYear()!==year)return null;
+ return d;
+}
+function parseDay(block,date){
+ const defs=[
+ ["db","Đặc biệt",/Đặc\s*biệt\s*:?\s*/i,5,5,1],
+ ["g1","Giải nhất",/Giải\s*nhất\s*:?\s*/i,5,5,1],
+ ["g2","Giải nhì",/Giải\s*nhì\s*:?\s*/i,10,5,2],
+ ["g3","Giải ba",/Giải\s*ba\s*:?\s*/i,30,5,6],
+ ["g4","Giải tư",/Giải\s*tư\s*:?\s*/i,16,4,4],
+ ["g5","Giải năm",/Giải\s*năm\s*:?\s*/i,24,4,6],
+ ["g6","Giải sáu",/Giải\s*sáu\s*:?\s*/i,9,3,3],
+ ["g7","Giải bảy",/Giải\s*bảy\s*:?\s*/i,8,2,4]
+ ];
+ let pos=[];
+ for(const z of defs){
+  const m=block.match(z[2]); if(!m)throw new Error(fmtDate(date)+" thiếu "+z[1]);
+  pos.push({key:z[0],label:z[1],digits:z[3],width:z[4],count:z[5],start:m.index,content:m.index+m[0].length});
+ }
+ pos.sort((a,b)=>a.start-b.start);
+ const groups={};
+ for(let i=0;i<pos.length;i++){
+  const p=pos[i],end=i+1<pos.length?pos[i+1].start:block.length;
+  let ds=digitsOnly(block.slice(p.content,end));
+  if(ds.length<p.digits)throw new Error(fmtDate(date)+" "+p.label+" không đủ số.");
+  ds=ds.slice(0,p.digits);groups[p.key]=[];
+  for(let j=0;j<p.count;j++)groups[p.key].push(ds.slice(j*p.width,(j+1)*p.width));
+ }
+ const p23=[...groups.db,...groups.g1,...groups.g2,...groups.g3,...groups.g4,...groups.g5,...groups.g6];
+ const tails3=p23.map(x=>x.slice(-3));
+ const freq3=new Uint8Array(1000);
+ const ab=new Uint16Array(100),ac=new Uint16Array(100),bc=new Uint16Array(100);
+ const A=new Uint16Array(10),B=new Uint16Array(10),C=new Uint16Array(10);
+ for(const s of tails3){
+  const a=+s[0],b=+s[1],c=+s[2],n=+s;
+  freq3[n]++;ab[a*10+b]++;ac[a*10+c]++;bc[b*10+c]++;A[a]++;B[b]++;C[c]++;
+ }
+ return {date,dateText:fmtDate(date),freq3,ab,ac,bc,A,B,C};
+}
+function parseData(){
+ const raw=normalizeText(document.getElementById("input").value);
+ if(!raw)throw new Error("Chưa có dữ liệu.");
+ const re=/(?:Thứ\s*(?:hai|ba|tư|năm|sáu|bảy)|Chủ\s*nhật)?\s*ngày\s*\d{1,2}\s*[-\/.]\s*\d{1,2}\s*[-\/.]\s*\d{4}/gi;
+ const matches=[...raw.matchAll(re)];
+ if(!matches.length)throw new Error("Không tìm thấy ngày.");
+ let data=[];
+ for(let i=0;i<matches.length;i++){
+  const start=matches[i].index,end=i+1<matches.length?matches[i+1].index:raw.length;
+  data.push(parseDay(raw.slice(start,end),parseDateHeader(matches[i][0])));
+ }
+ data.sort((a,b)=>a.date-b.date);
+ for(let i=1;i<data.length;i++)if(data[i].date.getTime()===data[i-1].date.getTime())throw new Error("Trùng ngày "+data[i].dateText);
+ return data;
+}
+function maxOf(x){let m=0;for(const v of x)if(v>m)m=v;return m||1}
+function aggregate(history){
+ const h=history.slice(-WIN),len=h.length;
+ const A={ab:new Float64Array(100),ac:new Float64Array(100),bc:new Float64Array(100),fab:new Float64Array(100),fac:new Float64Array(100),fbc:new Float64Array(100),a:new Float64Array(10),b:new Float64Array(10),c:new Float64Array(10),fa:new Float64Array(10),fb:new Float64Array(10),fc:new Float64Array(10)};
+ for(let i=0;i<len;i++){
+  const age=len-1-i,w1=Math.exp(-age/55),w2=Math.exp(-age/14),d=h[i];
+  for(let k=0;k<100;k++){A.ab[k]+=d.ab[k]*w1;A.ac[k]+=d.ac[k]*w1;A.bc[k]+=d.bc[k]*w1;A.fab[k]+=d.ab[k]*w2;A.fac[k]+=d.ac[k]*w2;A.fbc[k]+=d.bc[k]*w2;}
+  for(let k=0;k<10;k++){A.a[k]+=d.A[k]*w1;A.b[k]+=d.B[k]*w1;A.c[k]+=d.C[k]*w1;A.fa[k]+=d.A[k]*w2;A.fb[k]+=d.B[k]*w2;A.fc[k]+=d.C[k]*w2;}
+ }
+ return {h,len,A};
+}
+function rankCandidates(history,streak,failedSets){
+ const g=aggregate(history),h=g.h,len=g.len,A=g.A;
+ const M={ab:maxOf(A.ab),ac:maxOf(A.ac),bc:maxOf(A.bc),fab:maxOf(A.fab),fac:maxOf(A.fac),fbc:maxOf(A.fbc),a:maxOf(A.a),b:maxOf(A.b),c:maxOf(A.c),fa:maxOf(A.fa),fb:maxOf(A.fb),fc:maxOf(A.fc)};
+ let arr=[];
+ for(let n=0;n<1000;n++){
+  const s=fmt3(n),a=+s[0],b=+s[1],c=+s[2],ab=a*10+b,ac=a*10+c,bc=b*10+c;
+  let exactLong=0,exactFast=0,lastGap=999,gaps=[],prev=-1,total=0;
+  for(let i=0;i<len;i++){
+   const age=len-1-i,f=h[i].freq3[n];
+   if(f>0){
+    exactLong+=f*Math.exp(-age/55);exactFast+=f*Math.exp(-age/14);total+=f;
+    if(lastGap===999)lastGap=age;if(prev>=0)gaps.push(i-prev);prev=i;
+   }
+  }
+  let cycle=0;
+  if(gaps.length&&lastGap!==999){
+   const avg=gaps.reduce((x,y)=>x+y,0)/gaps.length;
+   cycle=1/(1+Math.abs(lastGap-avg)/Math.max(1,avg));
+  }
+  const gapTarget=lastGap===999?.2:lastGap>=5&&lastGap<=12?1:lastGap<=20?.8:lastGap<=35?.55:.3;
+  const bcLong=A.bc[bc]/M.bc,bcFast=A.fbc[bc]/M.fbc;
+  const abLong=A.ab[ab]/M.ab,abFast=A.fab[ab]/M.fab;
+  const acLong=A.ac[ac]/M.ac,acFast=A.fac[ac]/M.fac;
+  const aLong=A.a[a]/M.a,aFast=A.fa[a]/M.fa;
+  const bLong=A.b[b]/M.b,cLong=A.c[c]/M.c;
+
+  let base=bcLong*.18+bcFast*.14+abLong*.10+abFast*.08+acLong*.07+acFast*.05+
+           aLong*.05+aFast*.04+bLong*.03+cLong*.03+
+           Math.min(1,exactLong/6)*.06+Math.min(1,exactFast/3)*.03+
+           cycle*.05+gapTarget*.04;
+
+  let rescue=0,pen=0;
+  if(streak>=5){
+   const level=Math.min(1,.35+(streak-5)*.12);
+   rescue+=gapTarget*(.08*level)+cycle*(.06*level);
+   const freshStruct=bcFast*.45+abFast*.30+acFast*.25;
+   rescue+=freshStruct*(.06*level);
+   for(let j=0;j<failedSets.length;j++){
+    const decay=1/(j+1);
+    for(const y of failedSets[j]){
+     if(y.n===n)pen+=.12*level*decay;
+     if(y.bc===bc)pen+=.06*level*decay;
+     if(y.ab===ab)pen+=.04*level*decay;
+     if(y.a===a)pen+=.02*level*decay;
+    }
+   }
+  }
+  const freshScore=bcFast*.40+abFast*.30+acFast*.20+aFast*.10;
+  const abacScore=(abLong*.25+abFast*.25+acLong*.25+acFast*.25);
+  const bcScore=bcLong*.55+bcFast*.45;
+  const cycleScore=cycle*.58+gapTarget*.42;
+
+  arr.push({n,a,b,c,ab,ac,bc,lastGap,total,base,score:base+rescue-pen,
+            bcScore,abacScore,cycleScore,freshScore});
+ }
+ arr.sort((x,y)=>y.score-x.score||x.n-y.n);
+ arr.forEach((x,i)=>x.rank=i+1);
+ return arr;
+}
+function diversified(ranked){
+ const chosen=[],ca=new Map(),cbc=new Map(),cab=new Map(),cnt=(m,k)=>m.get(k)||0;
+ for(const x of ranked){
+  if(chosen.length>=TOPN)break;
+  if(cnt(ca,x.a)>=2||cnt(cbc,x.bc)>=1||cnt(cab,x.ab)>=1)continue;
+  chosen.push(x);ca.set(x.a,cnt(ca,x.a)+1);cbc.set(x.bc,1);cab.set(x.ab,1);
+ }
+ for(const x of ranked){if(chosen.length>=TOPN)break;if(!chosen.some(y=>y.n===x.n))chosen.push(x);}
+ return chosen;
+}
+function s4Level(streak){
+ if(streak<5)return 0;
+ if(streak<8)return 4;
+ if(streak<10)return 5;
+ return 6;
+}
+function s4Select(history,streak,failedSets,lastSet){
+ const ranked=rankCandidates(history,streak,failedSets),fresh=diversified(ranked);
+ if(!lastSet||!lastSet.length||streak<5)return {group:fresh,ranked};
+
+ const rep=s4Level(streak),keep=TOPN-rep,rankMap=new Map(ranked.map((x,i)=>[x.n,i]));
+ let oldSorted=[...lastSet].sort((x,y)=>(rankMap.get(x.n)??9999)-(rankMap.get(y.n)??9999));
+ let chosen=oldSorted.slice(0,keep);
+ const topBase=ranked[0]?.base||0,minBase=topBase*.52;
+
+ for(const x of ranked){
+  if(chosen.length>=TOPN)break;
+  if(chosen.some(y=>y.n===x.n))continue;
+  if(x.base<minBase&&streak<10)continue;
+  if(streak>=8){
+   if(chosen.filter(y=>y.bc===x.bc).length>=1)continue;
+   if(chosen.filter(y=>y.a===x.a).length>=2)continue;
+  }
+  chosen.push(x);
+ }
+ for(const x of fresh){if(chosen.length>=TOPN)break;if(!chosen.some(y=>y.n===x.n))chosen.push(x);}
+ for(const x of ranked){if(chosen.length>=TOPN)break;if(!chosen.some(y=>y.n===x.n))chosen.push(x);}
+ return {group:chosen,ranked};
+}
+function breakerCandidate(baseGroup,ranked,failedSets,streak,source){
+ if(source==="base"||streak<BREAK_AT)return null;
+ const maxRank=streak>=10?30:20;
+ const baseSet=new Set(baseGroup.map(x=>x.n));
+ const pool=ranked.filter(x=>x.rank>=7&&x.rank<=maxRank&&!baseSet.has(x.n));
+
+ const failN=new Set(),failBC=new Map(),failAB=new Map(),failA=new Map();
+ for(let j=0;j<failedSets.length;j++){
+  const w=1/(j+1);
+  for(const y of failedSets[j]){
+   failN.add(y.n);
+   failBC.set(y.bc,(failBC.get(y.bc)||0)+w);
+   failAB.set(y.ab,(failAB.get(y.ab)||0)+w);
+   failA.set(y.a,(failA.get(y.a)||0)+w);
+  }
+ }
+ function novelty(x){
+  let v=0;
+  v+=(1-Math.min(1,(failBC.get(x.bc)||0)/2))*.40;
+  v+=(1-Math.min(1,(failAB.get(x.ab)||0)/2))*.25;
+  v+=(1-Math.min(1,(failA.get(x.a)||0)/3))*.15;
+  v+=(!failN.has(x.n)?1:0)*.20;
+  return v;
+ }
+ let scored=pool.map(x=>{
+  let primary=0;
+  if(source==="rank") primary=(maxRank-x.rank+1)/maxRank;
+  if(source==="bc") primary=x.bcScore;
+  if(source==="abac") primary=x.abacScore;
+  if(source==="cycle") primary=x.cycleScore;
+  if(source==="fresh") primary=x.freshScore;
+  const final=primary*.65+novelty(x)*.25+((maxRank-x.rank+1)/maxRank)*.10;
+  return {...x,breakerScore:final};
+ }).sort((a,b)=>b.breakerScore-a.breakerScore||a.rank-b.rank);
+ return scored[0]||null;
+}
+function applyBreaker(baseGroup,ranked,failedSets,streak,source){
+ if(source==="base"||streak<BREAK_AT)return {group:baseGroup,breaker:null};
+ const br=breakerCandidate(baseGroup,ranked,failedSets,streak,source);
+ if(!br)return {group:baseGroup,breaker:null};
+ const rankMap=new Map(ranked.map((x,i)=>[x.n,i]));
+ let core=[...baseGroup].sort((x,y)=>(rankMap.get(x.n)??9999)-(rankMap.get(y.n)??9999)).slice(0,5);
+ if(core.some(x=>x.n===br.n))return {group:baseGroup,breaker:null};
+ return {group:[...core,br],breaker:br};
+}
+function evalDay(group,day){
+ let total=0,detail=[];
+ for(const x of group){const c=day.freq3[x.n];total+=c;if(c>0)detail.push({n:x.n,c});}
+ return {total,hit:total>0,detail};
+}
+function makeStat(){return {tests:0,hitDays:0,zeroDays:0,totalNhay:0,cur0:0,longest0:0,chains5:0,chains7:0,chains10:0,breakerUses:0,breakerHits:0}}
+function addStat(s,e,used,breakerHit){
+ s.tests++;s.totalNhay+=e.total;
+ if(used)s.breakerUses++;
+ if(breakerHit)s.breakerHits++;
+ if(e.hit){
+  s.hitDays++;
+  if(s.cur0>=5)s.chains5++;
+  if(s.cur0>=7)s.chains7++;
+  if(s.cur0>=10)s.chains10++;
+  s.cur0=0;
+ }else{s.zeroDays++;s.cur0++;s.longest0=Math.max(s.longest0,s.cur0);}
+}
+function finalize(s){
+ if(s.cur0>=5)s.chains5++;
+ if(s.cur0>=7)s.chains7++;
+ if(s.cur0>=10)s.chains10++;
+ return s;
+}
+function scoreStat(s){return s.longest0*1000000+s.chains10*10000+s.chains7*1000+s.chains5*100-s.hitDays;}
+function label(z){if(z<=7)return"RẤT TỐT";if(z<=10)return"ĐẠT";if(z<=12)return"CHẤP NHẬN";if(z===13)return"SÁT MỤC TIÊU";return"CHƯA ĐẠT"}
+
+function runSource(data,source,collect=true){
+ let streak=0,lastSet=null,failedSets=[],rows=[],s=makeStat();
+ for(let t=START;t<data.length;t++){
+  const base=s4Select(data.slice(0,t),streak,failedSets,lastSet);
+  const ap=applyBreaker(base.group,base.ranked,failedSets,streak,source);
+  const e=evalDay(ap.group,data[t]);
+  const breakerHit=ap.breaker?data[t].freq3[ap.breaker.n]>0:false;
+  if(collect)rows.push({date:data[t].dateText,group:ap.group,e,streakBefore:streak,breaker:ap.breaker,source});
+  if(e.hit){streak=0;failedSets=[];}else{streak++;failedSets.unshift(ap.group);if(failedSets.length>6)failedSets.pop();}
+  lastSet=ap.group;
+  addStat(s,e,!!ap.breaker,breakerHit);
+ }
+ finalize(s);
+ return {stat:s,rows,state:{streak,lastSet,failedSets}};
+}
+function checkData(){
+ try{
+  const d=parseData();
+  document.getElementById("result").innerHTML=`<div class="box"><h2>🔍 KIỂM TRA</h2><p class="good"><b>✅ Parser OK</b></p>
+  <div class="stats"><div class="stat">Tổng ngày<strong>${d.length}</strong></div><div class="stat">Cũ nhất<strong style="font-size:16px">${d[0].dateText}</strong></div><div class="stat">Mới nhất<strong style="font-size:16px">${d[d.length-1].dateText}</strong></div><div class="stat">Ngày test<strong>${Math.max(0,d.length-START)}</strong></div></div></div>`;
+ }catch(e){showError("LỖI DỮ LIỆU",e.message)}
+}
+function analyzeNext(){
+ try{
+  const data=parseData();if(data.length<WIN)throw new Error("Cần ít nhất 180 ngày.");
+  let all=SOURCES.map(src=>({src,...runSource(data,src.key,false)})).sort((x,y)=>scoreStat(x.stat)-scoreStat(y.stat));
+  const best=all[0],st=best.state;
+  const base=s4Select(data,st.streak,st.failedSets,st.lastSet);
+  const ap=applyBreaker(base.group,base.ranked,st.failedSets,st.streak,best.src.key);
+  const lastDate=data[data.length-1].dateText;
+  const coreNums=ap.breaker?ap.group.filter(x=>x.n!==ap.breaker.n):ap.group;
+  document.getElementById("result").innerHTML=`<div class="box"><h2>🎯 PHÂN TÍCH TOP 6 CHO NGÀY SAU ${lastDate}</h2>
+  <div class="note">
+    Dữ liệu mới nhất: <b>${lastDate}</b> • streak hiện tại của V8 RANK: <b>${st.streak}</b><br>
+    Chế độ hôm sau: <b>${ap.breaker?"BREAKER RANK":"S4 BÌNH THƯỜNG"}</b>
+    ${ap.breaker?" • Breaker được đôn lên: <b>"+fmt3(ap.breaker.n)+"</b> (raw rank #"+ap.breaker.rank+")":""}
+  </div>
+  <h3>🔢 TOP 6 CHÍNH THỨC</h3>
+  <div class="stats">${ap.group.map((x,i)=>`<div class="stat">#${i+1}<strong class="teal">${fmt3(x.n)}</strong><span class="tag">raw rank #${x.rank??"-"}</span>${ap.breaker&&x.n===ap.breaker.n?'<span class="tag">🧨 BREAKER</span>':'<span class="tag">S4 CORE</span>'}</div>`).join("")}</div>
+  <div class="safe" style="margin-top:14px">
+    <b>Quy tắc dàn hôm sau:</b> ${ap.breaker?"5 số S4 CORE + 1 BREAKER RANK.":"6 số S4, chưa kích hoạt Breaker vì streak < 7."}
+  </div>
+  </div>`;
+ }catch(e){showError("KHÔNG THỂ PHÂN TÍCH",e.message)}
+}
+async function runBacktest(){
+ const btn=document.getElementById("bt"),progress=document.getElementById("progress");
+ try{
+  btn.disabled=true;
+  const data=parseData();if(data.length<START+1)throw new Error("Cần ít nhất 181 ngày.");
+  let res=[];
+  for(let i=0;i<SOURCES.length;i++){
+   progress.textContent=`Đang chạy ${SOURCES[i].name}...`;
+   await new Promise(r=>setTimeout(r,0));
+   const out=runSource(data,SOURCES[i].key,true);
+   res.push({src:SOURCES[i],...out,score:scoreStat(out.stat)});
+  }
+  const baseline=res.find(x=>x.src.baseline);
+  res.sort((a,b)=>a.score-b.score);
+  const best=res[0];
+
+  let html=`<div class="box"><h2>📊 BACKTEST V8 BREAKER RANK</h2>
+  <div class="safe"><b>V8 RANK:</b> Backtest walk-forward. Mỗi ngày chỉ dùng dữ liệu cũ hơn ngày kiểm tra. Breaker chỉ hoạt động từ streak ≥7 và chỉ thay 1/6 số.</div>
+  <table><thead><tr><th>Mô hình</th><th>Cấu hình</th><th>Test</th><th>Ngày trúng</th><th>≥1</th><th>0 max</th><th>Chuỗi ≥5</th><th>Chuỗi ≥7</th><th>Chuỗi ≥10</th><th>Dùng Breaker</th><th>Breaker tự trúng</th><th>Tổng nháy</th><th>Trạng thái</th><th>Đánh giá</th></tr></thead><tbody>`;
+  res.forEach((r,i)=>{
+   const s=r.stat,b=baseline.stat;
+   const cmp="BẢN KHÓA";
+   html+=`<tr class="best base"><td><b>V8</b></td><td><b>${r.src.name}</b></td><td>${s.tests}</td><td>${s.hitDays}</td><td>${pct(s.hitDays,s.tests)}%</td><td><b>${s.longest0}</b></td><td>${s.chains5}</td><td>${s.chains7}</td><td>${s.chains10}</td><td>${s.breakerUses}</td><td>${s.breakerHits}</td><td>${s.totalNhay}</td><td><b>${cmp}</b></td><td><b>${label(s.longest0)}</b></td></tr>`;
+  });
+  html+=`</tbody></table></div>`;
+
+  const s=best.stat;
+  html+=`<div class="box"><h2>🎯 TỔNG KẾT V8 BREAKER RANK</h2>
+  <div class="stats">
+  <div class="stat">Ngày test<strong>${s.tests}</strong></div>
+  <div class="stat">Ngày trúng<strong class="good">${s.hitDays} (${pct(s.hitDays,s.tests)}%)</strong></div>
+  <div class="stat">0 max<strong class="teal">${s.longest0}</strong></div>
+  <div class="stat">Chuỗi ≥5<strong>${s.chains5}</strong></div>
+  <div class="stat">Chuỗi ≥7<strong>${s.chains7}</strong></div>
+  <div class="stat">Chuỗi ≥10<strong>${s.chains10}</strong></div>
+  <div class="stat">Dùng Breaker<strong>${s.breakerUses}</strong></div>
+  <div class="stat">Breaker tự trúng<strong>${s.breakerHits}</strong></div>
+  <div class="stat">Tổng nháy<strong>${s.totalNhay}</strong></div>
+  </div></div>`;
+
+  const rows=best.rows,L=rows.length;
+  html+=`<div class="box"><h2>📈 ĐỘ ỔN ĐỊNH THEO 3 GIAI ĐOẠN</h2><table><thead><tr><th>Đoạn</th><th>Ngày</th><th>Trúng</th><th>≥1</th><th>0 max</th><th>Breaker dùng</th><th>Breaker trúng</th></tr></thead><tbody>`;
+  for(let q=0;q<3;q++){
+   const lo=Math.floor(L*q/3),hi=Math.floor(L*(q+1)/3),ss=makeStat();
+   for(let i=lo;i<hi;i++){
+    const r=rows[i];
+    addStat(ss,r.e,!!r.breaker,r.breaker?data[START+i].freq3[r.breaker.n]>0:false);
+   }
+   finalize(ss);
+   html+=`<tr><td><b>Đoạn ${q+1}</b></td><td>${ss.tests}</td><td>${ss.hitDays}</td><td>${pct(ss.hitDays,ss.tests)}%</td><td><b>${ss.longest0}</b></td><td>${ss.breakerUses}</td><td>${ss.breakerHits}</td></tr>`;
+  }
+  html+=`</tbody></table></div>`;
+
+  html+=`<div class="box"><h2>📋 CHI TIẾT ĐẦY ĐỦ TỪNG NGÀY BACKTEST</h2>
+  <div class="note">Hiển thị đủ toàn bộ ngày theo thứ tự liên tục. Ngày streak ≥7 được đánh dấu <b>🧨 BREAKER ACTIVE</b>, nhưng không ẩn bất kỳ ngày nào.</div>
+  <div class="scroll"><table><thead><tr>
+  <th>#</th><th>Ngày</th><th>Streak trước</th><th>Chế độ</th><th>Top 6</th><th>Breaker</th><th>Rank Breaker</th><th>KQ</th><th>Nháy</th><th>Trúng</th>
+  </tr></thead><tbody>`;
+  rows.forEach((r,i)=>{
+   const active=r.streakBefore>=7;
+   const mode=active?"🧨 BREAKER ACTIVE":"S4 NORMAL";
+   const rowClass=r.e.hit?"hit":"zero";
+   html+=`<tr class="${rowClass}">
+   <td>${i+1}</td>
+   <td><b>${r.date}</b></td>
+   <td><b>${r.streakBefore}</b></td>
+   <td><b>${mode}</b></td>
+   <td><b>${r.group.map(x=>fmt3(x.n)).join(" - ")}</b></td>
+   <td>${r.breaker?`<b>${fmt3(r.breaker.n)}</b>`:"-"}</td>
+   <td>${r.breaker?r.breaker.rank:"-"}</td>
+   <td>${r.e.hit?"✅":"❌"}</td>
+   <td>${r.e.total}</td>
+   <td>${r.e.detail.length?r.e.detail.map(x=>fmt3(x.n)+" ×"+x.c).join(" | "):"-"}</td>
+   </tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+
+  document.getElementById("result").innerHTML=html;
+  progress.textContent="✅ Backtest V8 BREAKER RANK hoàn tất.";
+ }catch(e){showError("LỖI BACKTEST",e.message);progress.textContent=""}finally{btn.disabled=false}
+}
+function showError(title,msg){document.getElementById("result").innerHTML=`<div class="box"><h2 class="err">❌ ${title}</h2><div class="rules">${msg}</div></div>`}
+</script>
+</body>
+</html>
